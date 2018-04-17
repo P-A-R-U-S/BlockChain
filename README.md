@@ -3,10 +3,6 @@
 Project created as example of implementation BlockChain process in Go language.
 
 
-### Authors
+**Authors: Valentyn Ponomarenko** - *Initial work* - [P-A-R-U-S](https://github.com/P-A-R-U-S)
 
-* **Valentyn Ponomarenko** - *Initial work* - [P-A-R-U-S](https://github.com/P-A-R-U-S)
-
-### License
-
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
+**License** This project is licensed under the MIT License - see the [LICENSE.md](LICENSE.md) file for details
