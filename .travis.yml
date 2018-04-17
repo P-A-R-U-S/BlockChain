@@ -11,5 +11,6 @@
     - echo $GOPATH
     - echo $GOROOT
     - echo $PATH
+    - go build *.go
     - go test -v ./...
     - go test -bench=. ./...
