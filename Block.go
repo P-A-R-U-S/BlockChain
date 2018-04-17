@@ -4,6 +4,7 @@ import (
 	"strconv"
 	"bytes"
 	"crypto/sha256"
+	"time"
 )
 
 /*
@@ -21,7 +22,7 @@ type Block struct {
 }
 
 /*
-	Create Hash for existing Block
+Create Hash for existing Blocks
 */
 func (b *Block) SetHash() {
 	timestamp := []byte(strconv.FormatInt(b.Timestamp, 10))
@@ -31,3 +32,12 @@ func (b *Block) SetHash() {
 	b.Hash = hash[:]
 }
 
+
+/*
+Constructor of Blocks
+*/
+func NewBlock(data string, prevBlockHash []byte) *Block {
+	block := &Block{time.Now().Unix(), []byte(data), prevBlockHash, []byte{} }
+	block.SetHash()
+	return block
+}
