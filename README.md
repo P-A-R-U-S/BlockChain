@@ -2,6 +2,12 @@
 
 Project created as example of implementation BlockChain process in Go language.
 
+This example is designed based on series of articles from [Ivan Kuznetsov](https://twitter.com/jeiwan7) and implemented following concepts of BlockChain:
+* Proof-Of-Work
+* Persistence and CLI
+* Transactions
+* Addresses
+* Network
 
 **Authors: Valentyn Ponomarenko** - *Initial work* - [P-A-R-U-S](https://github.com/P-A-R-U-S)
 
