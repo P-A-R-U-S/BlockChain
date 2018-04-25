@@ -3,11 +3,15 @@
 Project created as example of implementation BlockChain process in Go language.
 
 This example is designed based on series of articles from [Ivan Kuznetsov](https://twitter.com/jeiwan7) and implemented following concepts of BlockChain:
-* Proof-Of-Work
-* Persistence and CLI
-* Transactions
-* Addresses
-* Network
+* [Base Prototype](https://jeiwan.cc/posts/building-blockchain-in-go-part-1/)
+* [Proof-Of-Work](https://jeiwan.cc/posts/building-blockchain-in-go-part-2/)
+* [Persistence](https://jeiwan.cc/posts/building-blockchain-in-go-part-3/)
+* [Transactions 1](https://jeiwan.cc/posts/building-blockchain-in-go-part-4/)
+* [Addresses](https://jeiwan.cc/posts/building-blockchain-in-go-part-5/)
+* [Transactions 2](https://jeiwan.cc/posts/building-blockchain-in-go-part-6/)
+* [Network](https://jeiwan.cc/posts/building-blockchain-in-go-part-7/)
+
+All articles accessible found by following link: [https://jeiwan.cc/](https://jeiwan.cc/)
 
 **Authors: Valentyn Ponomarenko** - *Initial work* - [P-A-R-U-S](https://github.com/P-A-R-U-S)
 

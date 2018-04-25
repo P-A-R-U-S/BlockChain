@@ -15,21 +15,21 @@ Note: 	By bitcoin spec extract Timestamp, PrevBlockHash, Hash into separate stru
 		For simplification we keep it as part of the current struct.
 */
 type Block struct {
-	Timestamp     int64  // date of creation
-	Data          []byte // version
-	PrevBlockHash []byte // previous block hash
-	Hash          []byte // current block hash
-	Nonce         int    // counter
+	Timestamp     	int64  // date of creation
+	Transactions	[]*Transaction // transactions
+	PrevBlockHash 	[]byte // previous block hash
+	Hash          	[]byte // current block hash
+	Nonce         	int    // counter
 }
 
 
 /*
 Constructor of Blocks
 */
-func NewBlock(data string, prevBlockHash []byte) *Block {
+func NewBlock(transactions []*Transaction, prevBlockHash []byte) *Block {
 	block := &Block{
 		time.Now().Unix(),
-		[]byte(data),
+		transactions,
 		prevBlockHash,
 		[]byte{},
 		0 }
@@ -41,6 +41,13 @@ func NewBlock(data string, prevBlockHash []byte) *Block {
 	block.Nonce = nonce
 
 	return block
+}
+
+/*
+Add Genesis-block (first block) into BlockChain
+*/
+func NewGenesisBlock(coinbase *Transaction) *Block {
+	return  NewBlock([]*Transaction{coinbase}, []byte{})
 }
 
 /*

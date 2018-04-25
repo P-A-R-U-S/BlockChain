@@ -7,6 +7,7 @@ import (
 
 const dbFile = "blockchain.db"
 const blocksBucket = "blocks"
+const genesisCoinbaseData = "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks"
 
 /*
 Base type to to contains block
@@ -14,6 +15,27 @@ Base type to to contains block
 type BlockChain struct {
 	tip []byte
 	db  *bolt.DB
+}
+
+/*
+Creates a new BlockChain DB
+*/
+func CreateBlockChain(address string) *BlockChain {
+
+	db, err := bolt.Open(dbFile, 0600, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err := db.Update(func(tx *bolt.Tx) error {
+		cbtx := NewCoinbaseTX(address, genesisCoinbaseData)
+		genesis := NewGenesisBlock(cbtx)
+
+		b, err := tx.CreateBucket([]byte{blocksBucket})
+		err = b.Put(genesis.Hash, genesis.Serialize())
+
+		return err
+	})
 }
 
 /*
@@ -54,13 +76,6 @@ func (bc *BlockChain) AddBlock(data string) {
 
 		return nil
 	})
-}
-
-/*
-Add Genesis-block (first block) into BlockChain
-*/
-func NewGenesisBlock() *Block {
-	return  NewBlock("Genesis Blocks", []byte{})
 }
 
 /*
