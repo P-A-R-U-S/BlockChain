@@ -11,7 +11,7 @@ This example is designed based on series of articles from [Ivan Kuznetsov](https
 * [Transactions 2](https://jeiwan.cc/posts/building-blockchain-in-go-part-6/)
 * [Network](https://jeiwan.cc/posts/building-blockchain-in-go-part-7/)
 
-All articles accessible found by following link: [https://jeiwan.cc/](https://jeiwan.cc/)
+Full list of articles can be found by following link: [https://jeiwan.cc/](https://jeiwan.cc/)
 
 **Authors: Valentyn Ponomarenko** - *Initial work* - [P-A-R-U-S](https://github.com/P-A-R-U-S)
 
