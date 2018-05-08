@@ -13,7 +13,7 @@ const genesisCoinbaseData = "The Times 03/Jan/2009 Chancellor on brink of second
 Base type to to contains block
 */
 type BlockChain struct {
-	tip []byte
+	tip []byte 		//hash of last block in a chain
 	db  *bolt.DB
 }
 
@@ -27,28 +27,30 @@ func CreateBlockChain(address string) *BlockChain {
 		log.Fatal(err)
 	}
 
-	err := db.Update(func(tx *bolt.Tx) error {
-		cbtx := NewCoinbaseTX(address, genesisCoinbaseData)
-		genesis := NewGenesisBlock(cbtx)
+	var tip []byte
 
-		b, err := tx.CreateBucket([]byte{blocksBucket})
+	cbtx := NewCoinbaseTX(address, genesisCoinbaseData)
+	genesis := NewGenesisBlock(cbtx)
+
+	err = db.Update(func(tx *bolt.Tx) error {
+
+		b, err := tx.CreateBucket([]byte(blocksBucket))
+		if err != nil {
+			log.Fatal(err)
+		}
+
 		err = b.Put(genesis.Hash, genesis.Serialize())
+		if err != nil {
+			log.Fatal(err)
+		}
 
-		return err
-	})
-}
+		err = b.Put([]byte("l"), genesis.Hash)
+		if err != nil {
+			log.Panic(err)
+		}
 
-/*
-Add new Blocks into BlockChain
-*/
-func (bc *BlockChain) AddBlock(data string) {
+		tip  = genesis.Hash
 
-	var lastHash []byte
-
-	err := bc.db.View(func(tx *bolt.Tx) error {
-
-		b := tx.Bucket([]byte(blocksBucket))
-		lastHash = b.Get([]byte("l"))
 		return nil
 	})
 
@@ -56,26 +58,9 @@ func (bc *BlockChain) AddBlock(data string) {
 		log.Fatal(err)
 	}
 
-	newBlock 	:= NewBlock(data, lastHash)
+	bc := BlockChain{tip, db }
 
-
-	err = bc.db.Update(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(blocksBucket))
-
-		err := b.Put(newBlock.Hash, newBlock.Serialize())
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		err = b.Put([]byte("l"), newBlock.Hash)
-		if err != nil {
-			log.Fatal(err)
-		}
-
-		bc.tip = newBlock.Hash
-
-		return nil
-	})
+	return &bc
 }
 
 /*
@@ -89,29 +74,9 @@ func NewBlockChain() *BlockChain  {
 		log.Fatal(err)
 	}
 
-	err = db.Update(func(tx *bolt.Tx) error {
+	err = db.View(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(blocksBucket))
-
-		if b == nil {
-			genesis := NewGenesisBlock()
-			b, err := tx.CreateBucket([]byte(blocksBucket))
-			if err != nil {
-				log.Panic(err)
-			}
-
-			err = b.Put(genesis.Hash, genesis.Serialize())
-			if err != nil {
-				log.Panic(err)
-			}
-
-			err = b.Put([]byte("l"), genesis.Hash)
-			if err != nil {
-				log.Panic(err)
-			}
-			tip  = genesis.Hash
-		} else {
-			tip = b.Get([]byte("l"))
-		}
+		tip  = b.Get([]byte("l"))
 
 		return nil
 	})
@@ -119,6 +84,7 @@ func NewBlockChain() *BlockChain  {
 	if err != nil {
 		log.Panic(err)
 	}
+
 	bc := BlockChain{tip, db }
 
 	return &bc
