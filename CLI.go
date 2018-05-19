@@ -1,16 +1,15 @@
 package main
 
 import (
-	"os"
 	"flag"
-	"log"
 	"fmt"
+	"log"
+	"os"
 	"strconv"
 )
 
-type CLI struct {
-	bc *BlockChain
-}
+// CLI responsible for processing command line arguments
+type CLI struct{}
 
 func (cli *CLI) validateArgs() {
 	if len(os.Args) < 2 {
@@ -19,7 +18,7 @@ func (cli *CLI) validateArgs() {
 	}
 }
 
-func (cli *CLI) printUsage()  {
+func (cli *CLI) printUsage() {
 
 }
 
@@ -31,7 +30,11 @@ func (cli *CLI) createBlockChain(address string) {
 }
 
 func (cli *CLI) printChain() {
-	bci := cli.bc.Iterator()
+	// TODO: Fix this
+	bc := NewBlockChain()
+	defer bc.db.Close()
+
+	bci := bc.Iterator()
 
 	for {
 		block := bci.Next()
@@ -49,7 +52,8 @@ func (cli *CLI) printChain() {
 	}
 }
 
-func (cli *CLI) Run()  {
+// Run parses command line arguments and processes commands
+func (cli *CLI) Run() {
 	cli.validateArgs()
 
 	createBlockChainCmd := flag.NewFlagSet("createblockchain", flag.ExitOnError)
@@ -57,7 +61,7 @@ func (cli *CLI) Run()  {
 
 	createBlockChainAddress := createBlockChainCmd.String("address", "", "The address to send genesis block reward to")
 
-	switch  os.Args[1] {
+	switch os.Args[1] {
 	case "createblockchain":
 		err := createBlockChainCmd.Parse(os.Args[2:])
 		if err != nil {

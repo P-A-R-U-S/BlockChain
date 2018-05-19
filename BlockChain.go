@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/boltdb/bolt"
 	"log"
+	"github.com/boltdb/bolt"
 )
 
 const dbFile = "blockchain.db"
@@ -13,7 +13,7 @@ const genesisCoinbaseData = "The Times 03/Jan/2009 Chancellor on brink of second
 Base type to to contains block
 */
 type BlockChain struct {
-	tip []byte 		//hash of last block in a chain
+	tip []byte //hash of last block in a chain
 	db  *bolt.DB
 }
 
@@ -49,7 +49,7 @@ func CreateBlockChain(address string) *BlockChain {
 			log.Panic(err)
 		}
 
-		tip  = genesis.Hash
+		tip = genesis.Hash
 
 		return nil
 	})
@@ -58,7 +58,7 @@ func CreateBlockChain(address string) *BlockChain {
 		log.Fatal(err)
 	}
 
-	bc := BlockChain{tip, db }
+	bc := BlockChain{tip, db}
 
 	return &bc
 }
@@ -66,7 +66,7 @@ func CreateBlockChain(address string) *BlockChain {
 /*
 Create BlockChain with Genesis-Blocks
 */
-func NewBlockChain() *BlockChain  {
+func NewBlockChain() *BlockChain {
 
 	var tip []byte
 	db, err := bolt.Open(dbFile, 0600, nil)
@@ -74,9 +74,9 @@ func NewBlockChain() *BlockChain  {
 		log.Fatal(err)
 	}
 
-	err = db.View(func(tx *bolt.Tx) error {
+	err = db.Update(func(tx *bolt.Tx) error {
 		b := tx.Bucket([]byte(blocksBucket))
-		tip  = b.Get([]byte("l"))
+		tip = b.Get([]byte("l"))
 
 		return nil
 	})
@@ -85,24 +85,23 @@ func NewBlockChain() *BlockChain  {
 		log.Panic(err)
 	}
 
-	bc := BlockChain{tip, db }
+	bc := BlockChain{tip, db}
 
 	return &bc
 }
 
-
 type BlockChainIterator struct {
 	currentHash []byte
-	db *bolt.DB
+	db          *bolt.DB
 }
 
-func(bc *BlockChain) Iterator() *BlockChainIterator {
+func (bc *BlockChain) Iterator() *BlockChainIterator {
 	bci := &BlockChainIterator{bc.tip, bc.db}
 
 	return bci
 }
 
-func(i *BlockChainIterator) Next() *Block {
+func (i *BlockChainIterator) Next() *Block {
 
 	var block *Block
 
@@ -116,7 +115,6 @@ func(i *BlockChainIterator) Next() *Block {
 	if err != nil {
 		log.Panic(err)
 	}
-
 
 	i.currentHash = block.PrevBlockHash
 
