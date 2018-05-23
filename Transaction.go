@@ -45,22 +45,6 @@ func (tx Transaction) Serialize() []byte {
 	return encoded.Bytes()
 }
 
-/*
-Transaction Input
-*/
-type TXInput struct {
-	Txid 		[]byte
-	Vout		int
-	ScriptSig	string
-}
-
-/*
-Transaction Output
-*/
-type TXOutput struct {
-	Value			int
-	ScriptPubKey	string // https://en.bitcoin.it/wiki/Script
-}
 
 /*
 Coinbase Transaction constructor

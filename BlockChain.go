@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"github.com/boltdb/bolt"
+	"encoding/hex"
 )
 
 const dbFile = "blockchain.db"
@@ -90,33 +91,48 @@ func NewBlockChain() *BlockChain {
 	return &bc
 }
 
-type BlockChainIterator struct {
-	currentHash []byte
-	db          *bolt.DB
-}
+func (bc *BlockChain) FindUnspentTransactions(address string) []Transaction  {
+	var unspentTXs []Transaction
+	spentTXOs := make(map[string][]int)
+	bci := bc.Iterator()
 
-func (bc *BlockChain) Iterator() *BlockChainIterator {
-	bci := &BlockChainIterator{bc.tip, bc.db}
+	for {
+		block := bci.Next()
 
-	return bci
-}
+		for _, tx := range block.Transactions {
+			txID := hex.EncodeToString(tx.ID)
 
-func (i *BlockChainIterator) Next() *Block {
+		Outputs:
+			for outIdx, out := range tx.Vout {
 
-	var block *Block
+				//Was the output spent ?
+				if spentTXOs[txID] != nil {
+					for _, spentOut := range spentTXOs[txID] {
+						if spentOut == outIdx {
+							continue Outputs
+						}
+					}
+				}
 
-	err := i.db.View(func(tx *bolt.Tx) error {
-		b := tx.Bucket([]byte(blocksBucket))
-		encodedBlock := b.Get(i.currentHash)
-		block = Deserialize(encodedBlock)
+				if out.CanBeUnlockedWith(address) {
+					unspentTXs = append(unspentTXs, *tx)
+				}
+			}
 
-		return nil
-	})
-	if err != nil {
-		log.Panic(err)
+			if tx.IsCoinbase() == false {
+				for _, in := range tx.Vin {
+					if in.CanUnlockOutputWith(address) {
+						inTxID := hex.EncodeToString(in.Txid)
+						spentTXOs[inTxID] = append(spentTXOs[inTxID], in.Vout)
+					}
+				}
+			}
+		}
+
+		if len(block.PrevBlockHash) == 0 {
+			break
+		}
 	}
 
-	i.currentHash = block.PrevBlockHash
-
-	return block
+	return unspentTXs
 }
