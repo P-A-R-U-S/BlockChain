@@ -4,9 +4,11 @@ import (
 	"log"
 	"github.com/boltdb/bolt"
 	"encoding/hex"
+	"os"
+	"fmt"
 )
 
-const dbFile = "blockchain.db"
+const dbFile = "blockchain_%s.db"
 const blocksBucket = "blocks"
 const genesisCoinbaseData = "The Times 03/Jan/2009 Chancellor on brink of second bailout for banks"
 
@@ -21,18 +23,24 @@ type BlockChain struct {
 /*
 Creates a new BlockChain DB
 */
-func CreateBlockChain(address string) *BlockChain {
+func CreateBlockChain(nodeID string) *BlockChain {
+
+	dbFile := fmt.Sprintf(dbFile, nodeID)
+	if dbExists(dbFile) {
+		fmt.Println("Blockchain already exists.")
+		os.Exit(1)
+	}
+
 
 	db, err := bolt.Open(dbFile, 0600, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	var tip []byte
-
-	cbtx := NewCoinbaseTX(address, genesisCoinbaseData)
+	cbtx := NewCoinbaseTX(nodeID, genesisCoinbaseData)
 	genesis := NewGenesisBlock(cbtx)
 
+	var tip []byte
 	err = db.Update(func(tx *bolt.Tx) error {
 
 		b, err := tx.CreateBucket([]byte(blocksBucket))
@@ -67,7 +75,13 @@ func CreateBlockChain(address string) *BlockChain {
 /*
 Create BlockChain with Genesis-Blocks
 */
-func NewBlockChain() *BlockChain {
+func NewBlockChain(nodeID string) *BlockChain {
+
+	dbFile := fmt.Sprintf(dbFile, nodeID)
+	if dbExists(dbFile) == false {
+		fmt.Println("No existing blockchain found. Create one first.")
+		os.Exit(1)
+	}
 
 	var tip []byte
 	db, err := bolt.Open(dbFile, 0600, nil)
@@ -99,6 +113,7 @@ func (bc *BlockChain) FindUnspentTransactions(address string) []Transaction  {
 	for {
 		block := bci.Next()
 
+		// Loop through all transactions
 		for _, tx := range block.Transactions {
 			txID := hex.EncodeToString(tx.ID)
 
@@ -135,4 +150,27 @@ func (bc *BlockChain) FindUnspentTransactions(address string) []Transaction  {
 	}
 
 	return unspentTXs
+}
+
+func (bc *BlockChain) FindUTXO(address string) []TXOutput {
+	var UTXOs []TXOutput
+
+	unspentTransactions := bc.FindUnspentTransactions(address)
+
+	for _, tx := range unspentTransactions {
+		for _, out := range  tx.Vout {
+			if out.CanBeUnlockedWith(address) {
+				UTXOs = append(UTXOs, out)
+			}
+		}
+	}
+	return UTXOs
+}
+
+func dbExists(dbFile string) bool {
+	if _, err := os.Stat(dbFile); os.IsNotExist(err) {
+		return false
+	}
+
+	return true
 }
