@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"encoding/gob"
 	"log"
+	"encoding/hex"
 )
 
 const subsidy = 10
@@ -32,8 +33,7 @@ func (tx *Transaction) Hash() []byte {
 	return hash[:]
 }
 
-
-func (tx Transaction) Serialize() []byte {
+func (tx *Transaction) Serialize() []byte {
 	var encoded bytes.Buffer
 
 	enc := gob.NewEncoder(&encoded)
@@ -45,6 +45,12 @@ func (tx Transaction) Serialize() []byte {
 	return encoded.Bytes()
 }
 
+/*
+Check if transactions is coin base.
+*/
+func (tx *Transaction) IsCoinbase() bool  {
+	return len(tx.Vin) == 1 && len(tx.Vin[0].Txid) == 0 && tx.Vin[0].Vout == -1
+}
 
 /*
 Coinbase Transaction constructor
@@ -63,8 +69,42 @@ func NewCoinbaseTX(to, data string) *Transaction {
 }
 
 /*
-
+Create new transaction
 */
-func (tx Transaction) IsCoinbase() bool  {
-	return len(tx.Vin) == 1 && len(tx.Vin[0].Txid) == 0 && tx.Vin[0].Vout == -1
+func NewUTXOTransactions(from, to string, amount int, bc *BlockChain) *Transaction  {
+
+	var inputs []TXInput
+	var outputs []TXOutput
+
+	acc, validOutputs := bc.FindSpendableOutputs(from, amount)
+
+	if acc < amount {
+		log.Panic("Error: Not enough funds.")
+	}
+
+	//build list of inputs
+	for txid, outs := range validOutputs {
+		txID, err := hex.DecodeString(txid)
+
+		if err != nil {
+			log.Panicf("Not able to DecodeString:%s",txid)
+		}
+
+		for _, out := range outs {
+			input := TXInput{ txID, out, from}
+			inputs = append(inputs, input)
+		}
+	}
+
+	//Build list of outputs
+	outputs = append(outputs, TXOutput{amount, to})
+	if acc > amount {
+		outputs = append(outputs, TXOutput{acc - amount, from})
+	}
+
+	tx := Transaction{nil, inputs, outputs}
+	tx.ID = tx.Hash()
+
+	return &tx
 }
+
